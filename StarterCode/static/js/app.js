@@ -1,75 +1,106 @@
 // D3 DATA
-    console.log(samples.json)
+    d3.json("samples.json").then(function(data) {
+        console.log(data);
 
-// BAR CHART
+        // DROPDOWN
+            // Use D3 to select the dropdown menu
+            var dropdownMenu = d3.select("#selDataset");
+            // Assign the value of the dropdown menu option to a variable
+            data.names.forEach((id) => {
+                // console.log(id)
+                dropdownMenu.append("option").text(id).property("value", id);
+                
+            })
+        loadcharts(data.names[0])  
+    });
 
-    // Sort the data by OTU search results descending
-    let sortedByOTU = data.sort((a, b) => b.OTUSearchResults - a.OTUSearchResults);
+    function optionChanged(this_id){
+        loadcharts(this_id)
+    }
+    function loadcharts(selected){
+        d3.json("samples.json").then(function(data){
+            console.log(selected)
 
-    // Slice the first 10 objects for plotting
-    slicedData = sortedByOTU.slice(0, 10);
+            // BAR CHART
+                let results = data.samples.filter(obj => obj.id == selected);
 
-    // Reverse the array to accommodate Plotly's defaults
-    reversedData = slicedData.reverse();
+                // console.log(results)
+                // console.log(results[0])
+                // console.log(results[0].otu_ids)
+                // console.log(results[0].otu_labels)
+                // console.log(results[0].sample_values)
 
-    // Trace1 for the OTU Data
-    let trace1 = {
-        x: reversedData.map(object => object.sample_values),
-        y: reversedData.map(object => object.otu_ids),
-        text: reversedData.map(object => object.otu_labels),
-        name: "OTUs by Sample Size",
-        type: "bar",
-        orientation: "h"
-        };
+                // // Reverse the array to accommodate Plotly's defaults
+                // reversedData = slicedData.reverse();
+            
 
-    // Data array
-    // `data` has already been defined, so we must choose a new name here:
-    let traceData1 = [trace1];
+                // Trace1 for the OTU Data
+                let trace1 = {
+                    x: results[0].sample_values.slice(0,10).reverse(),
+                    y: results[0].otu_ids.slice(0,10).map(obj => "OTU " + obj ).reverse(),
+                    text: results[0].otu_labels.slice(0,10).reverse(),
+                    name: "OTUs by Sample Size",
+                    type: "bar",
+                    orientation: "h"
+                };
+            
+                // Data array
+                // `data` has already been defined, so we must choose a new name here:
+                let traceData1 = [trace1];
+            
+                // Apply a title to the layout
+                let layout1 = {
+                    title: "OTUs by Sample Size",
+                    margin: {
+                        l: 100,
+                        r: 100,
+                        t: 100,
+                        b: 100
+                    }
+                };
+            
+                // Render the plot to the div tag with id "plot"
+                // Note that we use `traceData` here, not `data`
+                Plotly.newPlot("bar", traceData1, layout1);
 
-    // Apply a title to the layout
-    let layout1 = {
-        title: "OTUs by Sample Size",
-        margin: {
-            l: 100,
-            r: 100,
-            t: 100,
-            b: 100
-        }
-        };
-
-    // Render the plot to the div tag with id "plot"
-    // Note that we use `traceData` here, not `data`
-    Plotly.newPlot("plot", traceData1, layout1);
-
-// BUBBLE CHART
+            // BUBBLE CHART
 
 
-    // Trace2 for the OTU Data
-    let trace2 = {
-        x: sortedByOTU.map(object => object.otu_ids),
-        y: sortedByOTU.map(object => object.samples_values),
-        text: sortedByOTU.map(object => object.otu_labels),
-        color: sortedByOTU.map(object => object.otu_ids),
-        size: sortedByOTU.map(object => object.sample_values),
-        name: "OTU ID",
-        type: "bubble",
-        };
+                // Trace2 for the OTU Data
+                let trace2 = {
+                    y: results[0].sample_values,
+                    x: results[0].otu_ids,
+                    text: results[0].otu_labels,
+                    mode:"markers",
+                    marker: {
+                        size: results[0].sample_values,
+                        color: results[0].otu_ids
+                    },
+                    name: "OTU ID",
+                    type: "bubble",
+                    };
 
-    // Data array
-    // `data` has already been defined, so we must choose a new name here:
-    let traceData2 = [trace2];
+                // Data array
+                // `data` has already been defined, so we must choose a new name here:
+                let traceData2 = [trace2];
 
-    // Apply a title to the layout
-    let layout2 = {
-        title: "OTU ID",
-        margin: {
-            l: 100,
-            r: 100,
-            t: 100,
-            b: 100
-        }
-        };
-    
-        // Render the plot to the div tag with id "plot"
-        // Note that we use `traceData` here, not `data`
-        Plotly.newPlot("plot", traceData2, layout2);
+                // Apply a title to the layout
+                let layout2 = {
+                    title: "OTU ID",
+                    margin: {
+                        l: 100,
+                        r: 100,
+                        t: 100,
+                        b: 100
+                    }
+                    };
+                
+                    // Render the plot to the div tag with id "plot"
+                    // Note that we use `traceData` here, not `data`
+                    Plotly.newPlot("bubble", traceData2, layout2);
+
+            // DEMOGRAPHIC INFO
+                let metaresults = data.metadata.filter(obj => obj.metadata == selected);
+                console.log(metaresults[0])
+        })
+    }
