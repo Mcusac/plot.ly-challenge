@@ -11,7 +11,7 @@
                 dropdownMenu.append("option").text(id).property("value", id);
                 
             })
-        loadcharts(data.names[0])  
+            loadcharts(data.names[0])  
     });
 
     function optionChanged(this_id){
@@ -24,16 +24,6 @@
             // BAR CHART
                 let results = data.samples.filter(obj => obj.id == selected);
 
-                // console.log(results)
-                // console.log(results[0])
-                // console.log(results[0].otu_ids)
-                // console.log(results[0].otu_labels)
-                // console.log(results[0].sample_values)
-
-                // // Reverse the array to accommodate Plotly's defaults
-                // reversedData = slicedData.reverse();
-            
-
                 // Trace1 for the OTU Data
                 let trace1 = {
                     x: results[0].sample_values.slice(0,10).reverse(),
@@ -45,10 +35,9 @@
                 };
             
                 // Data array
-                // `data` has already been defined, so we must choose a new name here:
                 let traceData1 = [trace1];
             
-                // Apply a title to the layout
+                // Apply a title to the layout1
                 let layout1 = {
                     title: "OTUs by Sample Size",
                     margin: {
@@ -59,13 +48,10 @@
                     }
                 };
             
-                // Render the plot to the div tag with id "plot"
-                // Note that we use `traceData` here, not `data`
+                // Render the plot
                 Plotly.newPlot("bar", traceData1, layout1);
 
             // BUBBLE CHART
-
-
                 // Trace2 for the OTU Data
                 let trace2 = {
                     y: results[0].sample_values,
@@ -78,10 +64,9 @@
                     },
                     name: "OTU ID",
                     type: "bubble",
-                    };
+                };
 
                 // Data array
-                // `data` has already been defined, so we must choose a new name here:
                 let traceData2 = [trace2];
 
                 // Apply a title to the layout
@@ -93,14 +78,48 @@
                         t: 100,
                         b: 100
                     }
-                    };
+                };
                 
-                    // Render the plot to the div tag with id "plot"
-                    // Note that we use `traceData` here, not `data`
-                    Plotly.newPlot("bubble", traceData2, layout2);
+                // Render the plot
+                Plotly.newPlot("bubble", traceData2, layout2);
 
             // DEMOGRAPHIC INFO
-                let metaresults = data.metadata.filter(obj => obj.metadata == selected);
-                console.log(metaresults[0])
+                let metaresults = data.metadata.filter(obj => obj.id == selected);
+                console.log(metaresults[0]);
+
+                let demoref= d3.select("#sample-metadata")
+                demoref.html("")
+                Object.entries(metaresults[0]).forEach(([key, value]) => {
+                    demoref.append("h5").text(key + ": " + value)
+                })
+
+            // BONUS
+                var gdata = [{
+                    domain: { x: [0, 1], y: [0, 1] },
+                    value: metaresults[0].wfreq,
+                    title: { text: "Scrubs per Week" },
+                    type: "indicator",
+                    mode: "gauge+number",
+                    gauge: {
+                        axis: { range: [null, 9] },
+                        steps: [
+                            { range: [0, 3], color: "gray" },
+                            { range: [3, 6], color: "darkgray" },
+                            {range: [6,9], color: "lightgrey"}
+                        ],
+                        threshold: {
+                            line: { color: "red", width: 4 },
+                            thickness: 0.75,
+                            value: [9]
+                        }
+                    }
+                }];
+                
+                var layout3 = { 
+                    width: 600, 
+                    height: 450, 
+                    margin: { t: 0, b: 0 } 
+                };
+                Plotly.newPlot('gauge', gdata, layout3);
         })
     }
